@@ -1,0 +1,349 @@
+<!--
+PROG 3185 : Mobile Applications I
+Keighly Hill
+Email: khill6923@conestogac.on.ca
+
+An application about breeding, raising, and racing pigeons
+    - view all (Coop)
+    - view selected (Modify)
+        - change name / feed (Modify)
+    - race (Race)
+        - call calculateRace
+        - earn coins
+    - add pigeon (Breed)
+        - creates a single new pigeon
+            - stats / colour based on parents' info
+            - player enters a name
+    - delete pigeon (Sell)
+        - add coins to bank
+            - value = speed + stamina
+    - about
+        - display developer information
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Bird Racing App</title>
+        <!--jQuery-->
+        <script src="js/lib/jquery-2.1.4.js"></script>
+        <!--jQuery Mobile-->
+        <script src="js/lib/jquery.mobile-1.4.5.js"></script>
+        <!--jQuery Validator-->
+        <script src="js/lib/jquery.validate.js"></script>
+        <!--jQuery Mobile stylesheet-->
+        <link rel="stylesheet" type="text/css" href="css/lib/jquery.mobile-1.4.5.css">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <!--Database script files -->
+        <script src="js/birdDAL.js"></script>
+        <script src="js/birdFacade.js"></script>
+        <script src="js/database.js"></script>
+        <script src="js/global.js"></script>
+        <script src="js/util.js"></script>
+        <!--Extra CSS-->
+    </head>
+    <body>
+<!--Coop page-->
+<!---->
+<!---->
+        <div id="coopPage" data-role="page">
+            <header data-role="header" data-theme="b" data-position="fixed">
+                <h1>Coop</h1>
+                <div data-role="navbar" data-iconpos="top">
+                    <ul>
+                        <li><a href="#coopPage" class="ui-btn-active ui-state-persist">Coop</a></li>
+                        <li><a href="#racePage">Race</a></li>
+                        <li><a href="#breedPage">Breed</a></li>
+                        <li><a href="#sellPage">Sell</a></li>
+                        <li><a href="#aboutPage">About</a></li>
+                    </ul>
+                </div>
+            </header>
+            <section data-role="content">
+                <h5 id="coopBalance" align="right"></h5>
+
+                <!--List all birds in birds table-->
+                <h3 align="center" style="clear: both">My Birds</h3>
+                <img src="img/coop.png" alt="Coop Image" align="right" height="300" width="300" />
+                <p />
+                <ul id="lvMyBirds" data-role="listview"></ul>
+
+            </section>
+            <footer data-role="footer" data-theme="b" data-position="fixed">
+                <h1>Copyright &copy; Keighly Hill</h1>
+            </footer>
+        </div>
+
+<!--Modify page-->
+<!---->
+<!---->
+<div id="modifyPage" data-role="page">
+    <header data-role="header" data-theme="b" data-position="fixed">
+        <h1>Bird Stats</h1>
+        <div data-role="navbar" data-iconpos="top">
+            <ul>
+                <li><a href="#coopPage" class="ui-btn-active ui-state-persist">Coop</a></li>
+                <li><a href="#racePage">Race</a></li>
+                <li><a href="#breedPage">Breed</a></li>
+                <li><a href="#sellPage">Sell</a></li>
+                <li><a href="#aboutPage">About</a></li>
+            </ul>
+        </div>
+    </header>
+    <section data-role="content">
+        <h5 id="modifyBalance" align="right"></h5>
+        <!--List selected birds' information-->
+        <h1 id="myBirdName" align="center"></h1>
+        <hr />
+        <img id="myBirdGender" height="25" width="25" align="right" style="float: right" />
+        <p />
+
+        <!--Can change name-->
+        <img id="myBirdImg" height="300" width="300" align="center" />
+        <br />
+        <div style="clear: both">
+            <h3 id="myBirdSpeed" align="left" style="float: left"></h3>
+            <h3 id="myBirdStamina" align="right" style="float: right"></h3>
+        </div>
+        <br /><br />
+
+        <div data-role="controlgroup" data-type="horizontal" style="clear: both">
+            <h3 id="myBirdHunger" align="left" style="float: left"></h3>
+            <button type="button" id="btnFeed" name="btnFeed" data-inline="true" style="margin-left: 3em">Feed (5 coins)</button>
+        </div>
+
+        <form id="frmBirdModify" name="frmBirdModify">
+            <h4 align="left" style="padding-top: .75em">Change Name:</h4>
+            <input type="text" id="txtNameModify" name="txtNameModify">
+
+            <div>
+                <button type="button" id="btnUpdate" name="btnUpdate" class="ui-btn-active">Save Changes</button>
+                <button type="button" id="btnBack" name="btnBack" data-icon="back" data-rel="back">Return to Coop</button>
+            </div>
+        </form>
+    </section>
+    <footer data-role="footer" data-theme="b" data-position="fixed">
+        <h1>Copyright &copy; Keighly Hill</h1>
+    </footer>
+</div>
+
+<!--Race page-->
+<!---->
+<!---->
+        <div id="racePage" data-role="page">
+            <header data-role="header" data-theme="b" data-position="fixed">
+                <h1>Enter a Race</h1>
+                <div data-role="navbar" data-iconpos="top">
+                    <ul>
+                        <li><a href="#coopPage">Coop</a></li>
+                        <li><a href="#racePage" class="ui-btn-active ui-state-persist">Race</a></li>
+                        <li><a href="#breedPage">Breed</a></li>
+                        <li><a href="#sellPage">Sell</a></li>
+                        <li><a href="#aboutPage">About</a></li>
+                    </ul>
+                </div>
+            </header>
+            <section data-role="content">
+                <h5 id="raceBalance" align="right"></h5>
+
+                <h3 align="center">Rival Birds</h3>
+                <!--List all rivals in rivals table, place into list view-->
+                <ul id="lvRivalBirds" data-role="listview"></ul>
+                <p /><p />
+
+                <!--List all birds in birds table in a select list-->
+                <h3 align="center">Select your racer</h3>
+                <ul id="lvRaceBirds" data-role="listview"></ul>
+
+            </section>
+            <footer data-role="footer" data-theme="b" data-position="fixed">
+                <h1>Copyright &copy; Keighly Hill</h1>
+            </footer>
+        </div>
+
+<!--Results page-->
+<!---->
+<!---->
+        <div id="resultsPage" data-role="page">
+            <header data-role="header" data-theme="b" data-position="fixed">
+                <h1>Results</h1>
+                <div data-role="navbar" data-iconpos="top">
+                    <ul>
+                        <li><a href="#coopPage">Coop</a></li>
+                        <li><a href="#racePage" class="ui-btn-active ui-state-persist">Race</a></li>
+                        <li><a href="#breedPage">Breed</a></li>
+                        <li><a href="#sellPage">Sell</a></li>
+                        <li><a href="#aboutPage">About</a></li>
+                    </ul>
+                </div>
+            </header>
+            <section data-role="content">
+
+                <!-- Display results -->
+                <h3 id="h3Results" align="center"></h3>
+                <img src="img/results.png" alt="Results Image" align="center" height="300" width="300" style="padding-left: 1em"/>
+                <p />
+
+                <!-- Display earnings -->
+                <h5 id="h5Results" align="center"></h5>
+
+            </section>
+            <footer data-role="footer" data-theme="b" data-position="fixed">
+                <h1>Copyright &copy; Keighly Hill</h1>
+            </footer>
+        </div>
+
+<!--Breed page-->
+<!---->
+<!---->
+        <div id="breedPage" data-role="page">
+            <header data-role="header" data-theme="b" data-position="fixed">
+                <h1>Breed Birds</h1>
+                <div data-role="navbar" data-iconpos="top">
+                    <ul>
+                        <li><a href="#coopPage">Coop</a></li>
+                        <li><a href="#racePage">Race</a></li>
+                        <li><a href="#breedPage" class="ui-btn-active ui-state-persist">Breed</a></li>
+                        <li><a href="#sellPage">Sell</a></li>
+                        <li><a href="#aboutPage">About</a></li>
+                    </ul>
+                </div>
+            </header>
+            <section data-role="content">
+                <h5 id="breedBalance" align="right"></h5>
+
+                <h3 align="center">Breed Birds</h3>
+                <img src="img/breed.png" alt="Heart Image" align="center" height="300" width="300" style="padding-left: 1em"/>
+
+                <h3 align="center">Select male bird</h3>
+                <ul id="lvMale" data-role="listview"></ul>
+
+            </section>
+            <footer data-role="footer" data-theme="b" data-position="fixed">
+                <h1>Copyright &copy; Keighly Hill</h1>
+            </footer>
+        </div>
+
+<!--Female page-->
+<!---->
+<!---->
+<div id="femalePage" data-role="page">
+    <header data-role="header" data-theme="b" data-position="fixed">
+        <h1>Breed Birds</h1>
+        <div data-role="navbar" data-iconpos="top">
+            <ul>
+                <li><a href="#coopPage">Coop</a></li>
+                <li><a href="#racePage">Race</a></li>
+                <li><a href="#breedPage" class="ui-btn-active ui-state-persist">Breed</a></li>
+                <li><a href="#sellPage">Sell</a></li>
+                <li><a href="#aboutPage">About</a></li>
+            </ul>
+        </div>
+    </header>
+    <section data-role="content">
+        <h5 id="femaleBalance" align="right"></h5>
+
+        <h3 align="center">Breed Birds</h3>
+        <img src="img/breed.png" alt="Heart Image" align="center" height="300" width="300" style="padding-left: 1em" />
+
+        <h3 align="center">Select female bird</h3>
+        <ul id="lvFemale" data-role="listview"></ul>
+
+    </section>
+    <footer data-role="footer" data-theme="b" data-position="fixed">
+        <h1>Copyright &copy; Keighly Hill</h1>
+    </footer>
+</div>
+
+<!--Sell page-->
+<!---->
+<!---->
+        <div id="sellPage" data-role="page">
+            <header data-role="header" data-theme="b" data-position="fixed">
+                <h1>Sell Birds</h1>
+                <div data-role="navbar" data-iconpos="top">
+                    <ul>
+                        <li><a href="#coopPage">Coop</a></li>
+                        <li><a href="#racePage">Race</a></li>
+                        <li><a href="#breedPage">Breed</a></li>
+                        <li><a href="#sellPage" class="ui-btn-active ui-state-persist">Sell</a></li>
+                        <li><a href="#aboutPage">About</a></li>
+                    </ul>
+                </div>
+            </header>
+            <section data-role="content">
+                <h5 id="sellBalance" align="right"></h5>
+
+                <h3 align="center">Sell a Bird</h3>
+                <img src="img/sell.png" alt="Sell Image" align="right" height="300" width="300" />
+                <p />
+
+                <h3 align="center">Select bird to sell</h3>
+                <ul id="lvSellBirds" data-role="listview"></ul>
+
+            </section>
+            <footer data-role="footer" data-theme="b" data-position="fixed">
+                <h1>Copyright &copy; Keighly Hill</h1>
+            </footer>
+        </div>
+
+<!--About page-->
+<!---->
+<!---->
+<div id="aboutPage" data-role="page">
+    <header data-role="header" data-theme="b" data-position="fixed">
+        <h1>About</h1>
+        <div data-role="navbar" data-iconpos="top">
+            <ul>
+                <li><a href="#coopPage">Coop</a></li>
+                <li><a href="#racePage">Race</a></li>
+                <li><a href="#breedPage">Breed</a></li>
+                <li><a href="#sellPage">Sell</a></li>
+                <li><a href="#aboutPage" class="ui-btn-active ui-state-persist">About</a></li>
+            </ul>
+        </div>
+    </header>
+    <section data-role="content">
+
+        <!-- List developer info -->
+        <!-- name | email | game info | how to play -->
+        <h3 align="center">Birds Racing App</h3>
+        <p /><hr />
+        <h4>Developed by Keighly Hill</h4>
+        <h5>Contact via email: khill6923@conestogac.on.ca</h5>
+        <p /><hr />
+        <h3 align="center">About Birds Racing</h3>
+        <p>This app is "white rooming" apps/websites like Howrse, simdog, and Rival Stars</p>
+        <p /><hr />
+        <h3 align="center">How to Play</h3>
+        <h4>Racing</h4>
+        <p>To enter a race, select a bird from the list/p>
+        <p>A birds' placement in the race is determined by comparing its' stats to its' opponents' stats</p>
+        <p>To obtain birds with higher stats, try breeding the birds you already have</p>
+        <p />
+        <h4>Breeding</h4>
+        <p>To breed new birds, select a male bird, then a female bird to pair him with</p>
+        <p>A hatchlings' stats are based on its' parents stats (as well as a little bit of genetic luck)</p>
+        <p>A breedings' clutch size is always limited to one</p>
+        <p />
+        <h4>Selling</h4>
+        <p>To sell a bird, select it from the list</p>
+        <p>A birds' monetary value is based on the sum of its' stats</p>
+        <p />
+        <h4>Hunger</h4>
+        <p>Performing actions like racing and breeding will drain your bird of energy</p>
+        <p>To feed a bird, select it under coop and scroll down to click the Feed button</p>
+        <p>Feeding costs 5 coins</p>
+        <p>After being born, hatchling will be hungry, so don't forget to feed it</p>
+        <p>Hungry birds cannot perform actions other than selling, and will not be listed on the Race and Breed pages' dropdown lists</p>
+        <p />
+        <!-- <h4>Training</h4> -->
+
+    </section>
+    <footer data-role="footer" data-theme="b" data-position="fixed">
+        <h1>Copyright &copy; Keighly Hill</h1>
+    </footer>
+</div>
+    </body>
+</html>
