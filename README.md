@@ -35,6 +35,7 @@ Planned Updates (mainly focused on balancing the game & increasing difficulty)
 - Add racing tiers for more advanced birds
 - Track birds' races won, a bird will be able to enter high tier races after winning many beginner races
 - Accessories (don't interfere with a races' results)
+- Tack (effects a birds' preformance)
 
 **
 
