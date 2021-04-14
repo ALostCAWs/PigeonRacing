@@ -1,6 +1,6 @@
 # PigeonRacing
 Ver 1.0
-An app about racing pigeons
+An app about racing pigeons - May 2019
 
 **
 
